@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html>
+<head><title>SkyMap</title></head>
+<body>
+
+<script>
+
+var ResourceManager = new (function()
+{
+	var peak = 1;
+	var pendingResources = [];
+
+	this.getProgress = function ()
+	{
+		if (pendingResources.length == 0)
+		{
+			return 1.0;
+		};
+		return 1.0 - pendingResources.length / peak;
+	};
+
+	this.loadImage = function (src, onload)
+	{
+		var img = document.createElement('img');
+		img.onload = function ()
+		{
+			var index = pendingResources.indexOf(img);
+			if (index != -1)
+			{
+				pendingResources.splice(index, 1);
+			}
+			else
+			{
+				console.log('Error:' + img.src + ' not in pendingResources');
+			}
+			onload(img);
+		};
+		pendingResources.push(img);
+		peak = pendingResources.length;
+		img.src = src;
+		return img;
+	};
+
+	this.getString = function (id)
+	{
+		return "blah";
+	}
+})();
+
+function SharedPreferences()
+{
+	this.getBoolean = function (id, defaultValue)
+	{
+		return defaultValue;
+	};
+
+	this.registerOnSharedPreferenceChangeListener = function (listener)
+	{
+	};
+}
+
+var preferences = new SharedPreferences();
+
+</script>
+
+<script src="Color.js"></script>
+
+<script src="resources.js"></script>
+
+<script src="shaders.js"></script>
+
+<script src="proto.js"></script>
+
+<script src="base/TimeConstants.js"></script>
+<script src="util/Geometry.js"></script>
+<script src="util/TimeUtil.js"></script>
+<script src="units/Vector3.js"></script>
+<script src="units/GeocentricCoordinates.js"></script>
+<script src="units/HeliocentricCoordinates.js"></script>
+<script src="units/LatLong.js"></script>
+<script src="units/RaDec.js"></script>
+<script src="units/Matrix33.js"></script>
+<script src="util/VectorUtil.js"></script>
+<script src="util/Matrix4x4.js"></script>
+<script src="util/MathUtil.js"></script>
+
+
+<script src="ApplicationConstants.js"></script>
+<script src="control/RealClock.js"></script>
+<script src="control/TimeTravelClock.js"></script>
+<script src="control/TransitioningCompositeClock.js"></script>
+<script src="control/ZeroMagneticDeclinationCalculator.js"></script>
+<script src="control/AstronomerModel.js"></script>
+
+<script src="renderer/util/GLBuffer.js"></script>
+<script src="renderer/util/SkyRegionMap.js"></script>
+<script src="renderer/util/TextureManager.js"></script>
+<script src="renderer/util/ColorBuffer.js"></script>
+<script src="renderer/util/IndexBuffer.js"></script>
+<script src="renderer/util/NightVisionColorBuffer.js"></script>
+<script src="renderer/util/TexCoordBuffer.js"></script>
+<script src="renderer/util/VertexBuffer.js"></script>
+<script src="renderer/RenderState.js"></script>
+<script src="renderer/RendererObjectManager.js"></script>
+<script src="renderer/LabelObjectManager.js"></script>
+<script src="renderer/ImageObjectManager.js"></script>
+<script src="renderer/PointObjectManager.js"></script>
+<script src="renderer/PolyLineObjectManager.js"></script>
+<script src="renderer/SkyBox.js"></script>
+<script src="renderer/SkyRenderer.js"></script>
+
+<script src="renderer/RendererControllerBase.js"></script>
+<script src="renderer/RendererController.js"></script>
+
+<script src="source/AbstractAstronomicalSource.js"></script>
+<script src="source/impl/AbstractSource.js"></script>
+<script src="source/impl/ImageSourceImpl.js"></script>
+<script src="source/impl/LineSourceImpl.js"></script>
+<script src="source/impl/PointSourceImpl.js"></script>
+<script src="source/impl/TextSourceImpl.js"></script>
+<script src="source/proto/ProtobufAstronomicalSource.js"></script>
+
+<script src="search/PrefixStore.js"></script>
+
+<script src="layers/AbstractLayer.js"></script>
+<script src="layers/AbstractSourceLayer.js"></script>
+<script src="layers/AbstractFileBasedLayer.js"></script>
+<script src="layers/EclipticLayer.js"></script>
+<script src="layers/GridLayer.js"></script>
+<script src="layers/HorizonLayer.js"></script>
+<script src="layers/NewConstellationsLayer.js"></script>
+<script src="layers/NewStarsLayer.js"></script>
+<script src="layers/PlanetsLayer.js"></script>
+<script src="layers/SkyGradientLayer.js"></script>
+<script src="layers/LayerManager.js"></script>
+
+<script src="provider/ephemeris/SolarPositionCalculator.js"></script>
+<script src="provider/ephemeris/OrbitalElements.js"></script>
+<script src="provider/ephemeris/Planet.js"></script>
+<script src="provider/ephemeris/PlanetSource.js"></script>
+
+<div id="info"></div>
+<canvas width="640" height="480"></canvas>
+<div id="log">log<br></div>
+
+<script type="x-shader/x-vertex" id="vsh">
+attribute vec3 pos;
+attribute vec2 texCoord;
+uniform mat4 matrix;
+varying vec2 outTexCoord;
+void main()
+{
+	gl_Position = matrix * vec4(pos, 1);
+	outTexCoord = texCoord;
+}
+</script>
+
+<script type="x-shader/x-fragment" id="fsh">
+precision mediump float;
+varying vec2 outTexCoord;
+uniform sampler2D tex;
+void main()
+{
+	gl_FragColor = texture2D(tex, outTexCoord);
+}
+</script>
+
+<script type="x-shader/x-vertex" id="vshTexture">
+attribute vec3 pos;
+attribute vec2 texCoord;
+uniform mat4 matrix;
+varying vec2 varTexCoord;
+void main()
+{
+	gl_Position = matrix * vec4(pos, 1);
+	varTexCoord = texCoord;
+}
+</script>
+
+<script type="x-shader/x-fragment" id="fshTexture">
+precision mediump float;
+varying vec2 varTexCoord;
+uniform sampler2D tex;
+void main()
+{
+	gl_FragColor = texture2D(tex, varTexCoord);
+}
+</script>
+
+<script type="x-shader/x-vertex" id="vshColorVertex">
+attribute vec3 pos;
+attribute vec4 color;
+uniform mat4 matrix;
+varying vec4 varColor;
+void main()
+{
+	gl_Position = matrix * vec4(pos, 1);
+	varColor = color;
+}
+</script>
+
+<script type="x-shader/x-fragment" id="fshColorVertex">
+precision mediump float;
+varying vec4 varColor;
+void main()
+{
+	gl_FragColor = varColor;
+}
+</script>
+
+<script type="x-shader/x-vertex" id="vshTCV">
+attribute vec3 pos;
+attribute vec2 texCoord;
+attribute vec4 color;
+uniform mat4 matrix;
+varying vec2 varTexCoord;
+varying vec4 varColor;
+void main()
+{
+	gl_Position = matrix * vec4(pos, 1);
+	varTexCoord = texCoord;
+	varColor = color;
+}
+</script>
+
+<script type="x-shader/x-fragment" id="fshTCV">
+precision mediump float;
+varying vec2 varTexCoord;
+varying vec4 varColor;
+uniform sampler2D tex;
+void main()
+{
+	gl_FragColor = texture2D(tex, varTexCoord) * varColor;
+}
+</script>
+
+<script>
+
+// get html elements
+var canvas = document.querySelector('canvas');
+var log = document.querySelector('#log');
+var info = document.querySelector('#info');
+
+// get gl context
+var gl = canvas.getContext('webgl');
+
+
+
+
+
+// StardroidApplication
+var model = null;
+var layerManager = null;
+
+function getModel()
+{
+	if (model == null)
+	{
+		model = new AstronomerModelImpl(new ZeroMagneticDeclinationCalculator())
+	}
+	return model;
+}
+
+function getLayerManager(assetManager, preferences, resources)
+{
+	if (layerManager == null)
+	{
+		Log.i(TAG, "Initializing LayerManager");
+		layerManager = new LayerManager(preferences, getModel());
+		layerManager.addLayer(new NewStarsLayer(assetManager, resources));
+		//layerManager.addLayer(new NewMessierLayer(assetManager, resources));
+		layerManager.addLayer(new NewConstellationsLayer(assetManager, resources));
+		layerManager.addLayer(new PlanetsLayer(getModel(), resources, preferences));
+		//layerManager.addLayer(new MeteorShowerLayer(getModel(), resources));
+		layerManager.addLayer(new GridLayer(resources, 24, 19));
+		layerManager.addLayer(new HorizonLayer(getModel(), resources));
+		layerManager.addLayer(new EclipticLayer(resources));
+		layerManager.addLayer(new SkyGradientLayer(getModel(), resources));
+		//// layerManager.addLayer(new IssLayer(resources, getModel()));
+		layerManager.initialize();
+	}
+	else
+	{
+		Log.i(TAG, "LayerManager already initialized.");
+	}
+	return layerManager;
+}
+
+
+function getResources()
+{
+	return ResourceManager;
+}
+
+// temp testing code
+getModel();
+getLayerManager(null, preferences, ResourceManager);
+
+//model.setAutoUpdatePointing(false);
+//model.setPointing(new Vector3(-1,0,0), new Vector3(0,1,0));
+navigator.geolocation.getCurrentPosition(function (position)
+{
+	var newLocation = new LatLong(position.coords.latitude,	position.coords.longitude);
+	model.setLocation(newLocation);
+	console.log('set location ' + position.coords.latitude + ' ' + position.coords.longitude);
+}, function (error)
+{
+	console.log(error);
+});
+model.setPhoneSensorValues(new Vector3(0,-9.8,0), new Vector3(0,0,-1));
+
+
+// DynamicStarMapActivity.onChange
+// DynamicStarMapActivity.initializeModelViewController
+var skyView =
+{
+	queue : [],
+	queueEvent : function (r) { this.queue.push(r);},
+	run : function ()
+	{
+		this.queue.forEach(function (r)
+		{
+			r.run();
+		});
+		this.queue = [];
+	},
+};
+var renderer = new SkyRenderer(getResources());
+
+var rendererController = new RendererController(renderer, skyView);
+// The renderer will now call back every frame to get model updates.
+rendererController.addUpdateClosure(
+{
+	run : function ()
+	{
+		var pointing = model.getPointing();
+		var directionX = pointing.getLineOfSightX();
+		var directionY = pointing.getLineOfSightY();
+		var directionZ = pointing.getLineOfSightZ();
+
+		var upX = pointing.getPerpendicularX();
+		var upY = pointing.getPerpendicularY();
+		var upZ = pointing.getPerpendicularZ();
+
+		rendererController.queueSetViewOrientation(directionX, directionY, directionZ, upX, upY, upZ);
+		//setViewOrientation(directionX, directionY, directionZ, upX, upY, upZ);
+
+		var fieldOfView = model.getFieldOfView();
+		rendererController.queueFieldOfView(fieldOfView);
+		//setRadiusOfView(fieldOfView);
+	}
+});
+
+layerManager.registerWithRenderer(rendererController);
+
+
+
+
+// happens invisibly in android
+renderer.onSurfaceCreated(gl);
+renderer.onSurfaceChanged(gl, canvas.width, canvas.height);
+
+
+
+
+
+
+var gHMD = null;
+var gPositionSensor = null;
+var gDeviceOrientation = null;
+
+if (navigator.getVRDevices)
+{
+	navigator.getVRDevices().then(function(devices)
+	{
+		for (var i = 0; i < devices.length; ++i)
+		{
+			if (devices[i] instanceof HMDVRDevice)
+			{
+				gHMD = devices[i];
+				break;
+			}
+		}
+
+		if (gHMD)
+		{
+			for (var i = 0; i < devices.length; ++i)
+			{
+				if (devices[i] instanceof PositionSensorVRDevice &&
+					devices[i].hardwareUnitId == gHMD.hardwareUnitId)
+				{
+					gPositionSensor = devices[i];
+					window.requestAnimationFrame(step);
+					break;
+				}
+			}
+		}
+	});
+}
+else
+{
+	// respond to device orientation event
+	window.addEventListener('deviceorientation', function (e)
+	{
+		if (!gDeviceOrientation)
+		{
+			gDeviceOrientation = {}
+		}
+		// alpha is the compass direction the device is facing in degrees
+		gDeviceOrientation.dir = e.alpha || 0;
+		// beta is the front-to-back tilt in degrees, where front is positive
+		gDeviceOrientation.tiltFB = (e.beta || 90) - 90;
+		// gamma is the left-to-right tilt in degrees, where right is positive
+		gDeviceOrientation.tiltLR = e.gamma || 0;
+	}, true);
+}
+
+
+
+
+
+
+
+function matrixSetQuaternion(out, q)
+{
+	out[ 0] = 1 - 2*q.y*q.y - 2*q.z*q.z;
+	out[ 1] = 2*q.x*q.y - 2*q.z*q.w;
+	out[ 2] = 2*q.x*q.z + 2*q.y*q.w;
+	out[ 3] = 0;
+
+	out[ 4] = 2*q.x*q.y + 2*q.z*q.w;
+	out[ 5] = 1 - 2*q.x*q.x - 2*q.z*q.z;
+	out[ 6] = 2*q.y*q.z - 2*q.x*q.w;
+	out[ 7] = 0;
+
+	out[ 8] = 2*q.x*q.z - 2*q.y*q.w;
+	out[ 9] = 2*q.y*q.z + 2*q.x*q.w;
+	out[10] = 1- 2*q.x*q.x - 2*q.y*q.y;
+	out[11] = 0;
+
+	out[12] = 0;
+	out[13] = 0;
+	out[14] = 0;
+	out[15] = 1;
+}
+
+function matrixSetRotation(out, heading, attitude, bank)
+{
+	var ch = Math.cos(heading);
+	var sh = Math.sin(heading);
+	var ca = Math.cos(attitude);
+	var sa = Math.sin(attitude);
+	var cb = Math.cos(bank);
+	var sb = Math.sin(bank);
+
+	out[ 0] = ch * ca;
+	out[ 1] = sh*sb - ch*sa*cb;
+	out[ 2] = ch*sa*sb + sh*cb;
+	out[ 3] = 0;
+
+	out[ 4] = sa;
+	out[ 5] = ca*cb;
+	out[ 6] = -ca*sb;
+	out[ 7] = 0;
+
+	out[ 8] = -sh*ca;
+	out[ 9] = sh*sa*cb + ch*sb;
+	out[10] = -sh*sa*sb + ch*cb;
+	out[11] = 0;
+
+	out[12] = 0;
+	out[13] = 0;
+	out[14] = 0;
+	out[15] = 1;
+}
+
+var view = new Float32Array(16);
+
+var acceleration = new Vector3(0,0,0);
+var magneticNorth = new Vector3(0,0,0);
+
+// drawing loop
+function step(timestamp)
+{
+	var state;
+	if (gPositionSensor && (state = gPositionSensor.getState()) && state.orientation)
+	{
+		matrixSetQuaternion(view, state.orientation);
+		acceleration.assign(-view[4], -view[5], -view[6]);
+		magneticNorth.assign(view[8], view[9], view[10]);
+		model.setPhoneSensorValues(acceleration, magneticNorth);
+	}
+	else if (gDeviceOrientation)
+	{
+		matrixSetRotation(view,
+			gDeviceOrientation.dir * MathUtil.DEGREES_TO_RADIANS,
+			-gDeviceOrientation.tiltLR * MathUtil.DEGREES_TO_RADIANS,
+			gDeviceOrientation.tiltFB * MathUtil.DEGREES_TO_RADIANS);
+		acceleration.assign(-view[4], -view[5], -view[6]);
+		magneticNorth.assign(view[8], view[9], view[10]);
+		model.setPhoneSensorValues(acceleration, magneticNorth);
+	}
+
+	skyView.run();
+
+	if (ResourceManager.getProgress() < 1.0)
+	{
+		requestAnimationFrame(step);
+		return;
+	}
+
+	renderer.onDrawFrame(gl);
+
+	requestAnimationFrame(step);
+}
+
+window.requestAnimationFrame(step);
+
+
+
+
+
+// set full screen for different browsers
+function requestFullScreen()
+{
+	var options;
+	if (gHMD)
+	{
+		options = {vrDisplay:gHMD};
+	}
+	if (canvas.requestFullScreen)
+	{
+		canvas.requestFullScreen(options);
+	}
+	else if(canvas.webkitRequestFullScreen)
+	{
+		canvas.webkitRequestFullScreen(options);
+	}
+	else if (canvas.mozRequestFullScreen)
+	{
+		canvas.mozRequestFullScreen(options);
+	}
+}
+
+// event to respond to fullscreen enter/exit
+var isFullScreen = false;
+function onFullScreenChange()
+{
+	if(document.fullScreen || document.webkitIsFullScreen || document.mozFullScreen)
+	{
+		canvas.width = screen.width;
+		canvas.height = screen.height;
+		isFullScreen = true;
+	}
+	else
+	{
+		canvas.width = 640;
+		canvas.height = 480;
+		isFullScreen = false;
+	}
+	renderer.onSurfaceChanged(gl, canvas.width, canvas.height);
+	if (isFullScreen && gHMD)
+	{
+		var leftFOV = gHMD.getEyeParameters('left').currentFieldOfView;
+		var rightFOV = gHMD.getEyeParameters('right').currentFieldOfView;
+		var leftMatrix = Matrix4x4.createFOVProjection(leftFOV);
+		var rightMatrix = Matrix4x4.createFOVProjection(rightFOV);
+		renderer.enableStereoscopic(true, leftMatrix, rightMatrix);
+	}
+	else
+	{
+		renderer.enableStereoscopic(false);
+	}
+}
+
+if (canvas.requestFullScreen)
+{
+	document.addEventListener('fullscreenchange', onFullScreenChange);
+}
+else if(canvas.webkitRequestFullScreen)
+{
+	document.addEventListener('webkitfullscreenchange', onFullScreenChange);
+}
+else if (canvas.mozRequestFullScreen)
+{
+	document.addEventListener('mozfullscreenchange', onFullScreenChange);
+}
+
+// events that trigger fullscreen
+canvas.onclick = requestFullScreen;
+
+window.addEventListener('keydown', function (e)
+{
+	// alt+enter was a traditional full screen hot key
+	if (e.which == 13 && e.altKey)
+	{
+		requestFullScreen();
+	}
+}, true);
+
+</script>
+</body>
+</html>
