@@ -11,6 +11,8 @@ starweb is a port of [stardroid] to html/javascript/webgl. In addition it provid
 
 It should also work with Google Cardboard, it has been tested on Firefox Mobile without WebVR.
 
+Give it a Try! http://codes4fun.github.io/starweb/
+
 [stardroid] is the project for the [Sky Map] android app, written in Java with the Android SDK.
 
 ### Version
