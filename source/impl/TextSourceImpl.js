@@ -42,7 +42,7 @@ function TextSourceImpl(a1,a2,a3,a4,a5)
 			}
 			else
 			{
-				this.offset = 0.2;
+				this.offset = 0.02;
 				this.fontSize = 15;
 			}
 		}
@@ -50,7 +50,7 @@ function TextSourceImpl(a1,a2,a3,a4,a5)
 		{
 			AbstractSource.call(this, GeocentricCoordinates.getInstance(a1,a2), a4);
 			this.label = a3;
-			this.offset = 0.2;
+			this.offset = 0.02;
 			this.fontSize = 15;
 		}
 	}

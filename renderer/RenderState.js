@@ -18,6 +18,7 @@ function RenderState()
 	var mActiveSkyRegionSet = null;
 
 	var mTextureShader = null;
+	var mTextureColorShader = null;
 	var mColorVertexShader = null;
 	var mTCVShader = null;
 
@@ -158,6 +159,15 @@ function RenderState()
 	this.setTextureShader = function (shader)
 	{
 		mTextureShader = shader;
+	}
+
+	this.getTextureColorShader = function ()
+	{
+		return mTextureColorShader;
+	}
+	this.setTextureColorShader = function (shader)
+	{
+		mTextureColorShader = shader;
 	}
 
 	this.getColorVertexShader = function ()

@@ -11,6 +11,8 @@ starweb is a port of [stardroid] to html/javascript/webgl. In addition it provid
 
 It should also work with Google Cardboard, it has been tested on Firefox Mobile without WebVR.
 
+Give it a Try! http://codes4fun.github.io/starweb/
+
 [stardroid] is the project for the [Sky Map] android app, written in Java with the Android SDK.
 
 ### Version
@@ -18,24 +20,31 @@ It should also work with Google Cardboard, it has been tested on Firefox Mobile 
 
 ### NOTES
 
+## USAGE
+
 To enable fullscreen mode (which includes WebVR) click the webgl viewport. This is temporary until real UI is implemented.
 
-I'm not sure if I am going to port searching, there is code but it is untested and very likely broken.
+## TODO
 
-I originally intended this to be a 1 week project and it is already going past that.
-
-If you want to buy me coffee or a beer you can send me bitcoins here:
-[17Mqj42oV1xtMWt16MBPyveZZXKUaJFH1H]
-
-### TODO
-
- - Port LabelObjectManager.
+ - Fix rendering order (may not just-work in VR).
  - Implement UI for settings/preferences.
  - Support Google Cardboard mobile browsers without WebVR.
  - Port SkyRegionMap (optimization).
  - Lots more testing!
 
-LICENSE
+## MISC
+
+I originally intended this to be a 1 week project and it is already going past that.
+
+Things that I may not complete given how much time I have:
+ - multi-language support
+ - fix text aliasing issues, introduced to get full 3d text in VR.
+ - searching
+
+I accept bitcoins!
+[17Mqj42oV1xtMWt16MBPyveZZXKUaJFH1H]
+
+## LICENSE
 ----
 
 Apache License, Version 2.0
