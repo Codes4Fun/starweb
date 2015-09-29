@@ -220,7 +220,7 @@ Matrix4x4.multiplyMV = function (mat, v)
 */
 Matrix4x4.transformVector = function (mat, v) 
 {
-	var trans = multiplyMV(mat, v);
+	var trans = Matrix4x4.multiplyMV(mat, v);
 	var m = mat.getFloatArray();
 	var w = m[3]*v.x + m[7]*v.y + m[11]*v.z + m[15];
 	var oneOverW = 1.0 / w;

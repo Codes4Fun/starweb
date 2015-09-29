@@ -3,50 +3,10 @@
 <head><title>SkyMap</title></head>
 <body>
 
+<script src="resources.js"></script>
+<script src="strings/default.js"></script>
+
 <script>
-
-var ResourceManager = new (function()
-{
-	var peak = 1;
-	var pendingResources = [];
-
-	this.getProgress = function ()
-	{
-		if (pendingResources.length == 0)
-		{
-			return 1.0;
-		};
-		return 1.0 - pendingResources.length / peak;
-	};
-
-	this.loadImage = function (src, onload)
-	{
-		var img = document.createElement('img');
-		img.onload = function ()
-		{
-			var index = pendingResources.indexOf(img);
-			if (index != -1)
-			{
-				pendingResources.splice(index, 1);
-			}
-			else
-			{
-				console.log('Error:' + img.src + ' not in pendingResources');
-			}
-			onload(img);
-		};
-		pendingResources.push(img);
-		peak = pendingResources.length;
-		img.src = src;
-		return img;
-	};
-
-	this.getString = function (id)
-	{
-		return "blah";
-	}
-})();
-
 function SharedPreferences()
 {
 	this.getBoolean = function (id, defaultValue)
@@ -60,12 +20,9 @@ function SharedPreferences()
 }
 
 var preferences = new SharedPreferences();
-
 </script>
 
 <script src="Color.js"></script>
-
-<script src="resources.js"></script>
 
 <script src="shaders.js"></script>
 
@@ -84,7 +41,6 @@ var preferences = new SharedPreferences();
 <script src="util/Matrix4x4.js"></script>
 <script src="util/MathUtil.js"></script>
 
-
 <script src="ApplicationConstants.js"></script>
 <script src="control/RealClock.js"></script>
 <script src="control/TimeTravelClock.js"></script>
@@ -95,6 +51,7 @@ var preferences = new SharedPreferences();
 <script src="renderer/util/GLBuffer.js"></script>
 <script src="renderer/util/SkyRegionMap.js"></script>
 <script src="renderer/util/TextureManager.js"></script>
+<script src="renderer/util/LabelMaker.js"></script>
 <script src="renderer/util/ColorBuffer.js"></script>
 <script src="renderer/util/IndexBuffer.js"></script>
 <script src="renderer/util/NightVisionColorBuffer.js"></script>
@@ -143,28 +100,6 @@ var preferences = new SharedPreferences();
 <canvas width="640" height="480"></canvas>
 <div id="log">log<br></div>
 
-<script type="x-shader/x-vertex" id="vsh">
-attribute vec3 pos;
-attribute vec2 texCoord;
-uniform mat4 matrix;
-varying vec2 outTexCoord;
-void main()
-{
-	gl_Position = matrix * vec4(pos, 1);
-	outTexCoord = texCoord;
-}
-</script>
-
-<script type="x-shader/x-fragment" id="fsh">
-precision mediump float;
-varying vec2 outTexCoord;
-uniform sampler2D tex;
-void main()
-{
-	gl_FragColor = texture2D(tex, outTexCoord);
-}
-</script>
-
 <script type="x-shader/x-vertex" id="vshTexture">
 attribute vec3 pos;
 attribute vec2 texCoord;
@@ -184,6 +119,29 @@ uniform sampler2D tex;
 void main()
 {
 	gl_FragColor = texture2D(tex, varTexCoord);
+}
+</script>
+
+<script type="x-shader/x-vertex" id="vshTextureColor">
+attribute vec3 pos;
+attribute vec2 texCoord;
+uniform mat4 matrix;
+varying vec2 varTexCoord;
+void main()
+{
+	gl_Position = matrix * vec4(pos, 1);
+	varTexCoord = texCoord;
+}
+</script>
+
+<script type="x-shader/x-fragment" id="fshTextureColor">
+precision mediump float;
+varying vec2 varTexCoord;
+uniform sampler2D tex;
+uniform vec4 color;
+void main()
+{
+	gl_FragColor = texture2D(tex, varTexCoord) * color;
 }
 </script>
 

@@ -17,7 +17,7 @@ function PlanetSource(planet, resources, model, prefs)
 	var pointSources = [];
 	var imageSources = [];
 	var labelSources = [];
-	var name = planet.getNameResourceId();//resources.getString(planet.getNameResourceId());
+	var name = resources.getString(planet.getNameResourceId());
 	var preferences = prefs;
 	var currentCoords = new GeocentricCoordinates(0, 0, 0);
 	var sunCoords;

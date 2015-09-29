@@ -141,10 +141,23 @@ function SkyRenderer(res)
 
 		// Release references to all of the old textures.
 		mTextureManager.reset();
-		
-		mRenderState.setTextureShader(new TextureShader(gl));
-		mRenderState.setColorVertexShader(new ColorVertexShader(gl));
-		mRenderState.setTCVShader(new TCVShader(gl));
+
+		mRenderState.setTextureShader(new Shader(gl,
+			'vshTexture', 'fshTexture',
+			['pos', 'texCoord'],
+			['matrix', 'tex']));
+		mRenderState.setTextureColorShader(new Shader(gl,
+			'vshTextureColor', 'fshTextureColor',
+			['pos', 'texCoord'],
+			['matrix', 'tex', 'color']));
+		mRenderState.setColorVertexShader(new Shader(gl,
+			'vshColorVertex', 'fshColorVertex',
+			['pos', 'color'],
+			['matrix']));
+		mRenderState.setTCVShader(new Shader(gl,
+			'vshTCV', 'fshTCV',
+			['pos', 'texCoord', 'color'],
+			['matrix', 'tex']));
 
 		// Reload all of the managers.
 		for (var i = 0; i < mAllManagers.length; i++)
