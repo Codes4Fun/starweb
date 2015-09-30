@@ -201,11 +201,12 @@ function LabelObjectManager(layer, textureManager)
 		
 		var viewWidth = rs.getScreenWidth();
 		var viewHeight = rs.getScreenHeight();
-		var lookDir = this.getRenderState().getLookDir();
-		var upDir = this.getRenderState().getUpDir();
+		var lookDir = rs.getLookDir();
+		var upDir = rs.getUpDir();
+		var rightDir = rs.getRightDir();
 
 		var rotation = Matrix4x4.createRotation(rs.getUpAngle(), lookDir);
-		mLabelOffset = Matrix4x4.multiplyMV(rotation, rs.getUpDir());
+		mLabelOffset = Matrix4x4.multiplyMV(rotation, upDir);
 
 		// If a label isn't within the field of view angle from the target vector, it can't
 		// be on the screen.  Compute the cosine of this angle so we can quickly identify these.
@@ -214,7 +215,6 @@ function LabelObjectManager(layer, textureManager)
 		mDotProductThreshold = MathUtil.cos(rs.getRadiusOfView() * DEGREES_TO_RADIANS * 
 			(1 + viewWidth / viewHeight) * 0.5);
 
-		var rightDir = VectorUtil.crossProduct(lookDir, upDir);
 		mMatrix = new Matrix4x4([
 			rightDir.x, rightDir.y, rightDir.z, 0,
 			upDir.x, upDir.y, upDir.z, 0,
