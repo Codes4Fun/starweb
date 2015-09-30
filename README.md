@@ -1,7 +1,7 @@
 Sky Map for the Web
 ===
 
-# starweb
+## starweb
 
 starweb is a port of [stardroid] to html/javascript/webgl. In addition it provides support for [WebVR] and it has been tested to work with:
 
@@ -20,19 +20,18 @@ Give it a Try! http://codes4fun.github.io/starweb/
 
 ### NOTES
 
-## USAGE
+#### USAGE
 
 To enable fullscreen mode (which includes WebVR) click the webgl viewport. This is temporary until real UI is implemented.
 
-## TODO
+#### TODO
 
- - Fix rendering order (may not just-work in VR).
  - Implement UI for settings/preferences.
  - Support Google Cardboard mobile browsers without WebVR.
  - Port SkyRegionMap (optimization).
  - Lots more testing!
 
-## MISC
+#### MISC
 
 I originally intended this to be a 1 week project and it is already going past that.
 
@@ -44,7 +43,7 @@ Things that I may not complete given how much time I have:
 I accept bitcoins!
 [17Mqj42oV1xtMWt16MBPyveZZXKUaJFH1H]
 
-## LICENSE
+#### LICENSE
 ----
 
 Apache License, Version 2.0
