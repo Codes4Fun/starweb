@@ -1,6 +1,71 @@
 <!DOCTYPE html>
 <html>
-<head><title>SkyMap</title></head>
+<head>
+<title>SkyMap</title>
+<style>
+html, body {
+	margin:0px;
+	height:100%;
+	overflow:hidden;
+}
+.sidebarleft {
+	position:absolute;
+	left:0px;
+	top:50%;
+	transform:translate(0px,-50%);
+	width:55px;
+	height:336px;
+	background-image:url(drawable/sidebarnoelements.png);
+}
+.leftbutton {
+	margin-top:7px;
+	margin-left:5px;
+	width:40px;
+	height:40px;
+}
+.star.on { background-image:url(drawable/star_on.png); }
+.star.off {	background-image:url(drawable/star_off.png); }
+.stars.on {	background-image:url(drawable/stars_on.png); }
+.stars.off { background-image:url(drawable/stars_off.png); }
+.messier.on { background-image:url(drawable/messier_on.png); }
+.messier.off { background-image:url(drawable/messier_off.png); }
+.planet.on { background-image:url(drawable/planet_on.png); }
+.planet.off { background-image:url(drawable/planet_off.png); }
+.meteor.on { background-image:url(drawable/b_meteor_on.png); }
+.meteor.off { background-image:url(drawable/b_meteor_off.png); }
+.grid.on { background-image:url(drawable/grid_on.png); }
+.grid.off { background-image:url(drawable/grid_off.png); }
+.horizon.on { background-image:url(drawable/horizon_on.png); }
+.horizon.off { background-image:url(drawable/horizon_off.png); }
+.sidebarright {
+	position:absolute;
+	right:0px;
+	top:50%;
+	transform:translate(0px,-50%);
+	width:55px;
+	height:336px;
+	background-image:url(sidebar_right.png);
+}
+.rightbutton {
+	margin-top:5px;
+	margin-left:9px;
+	width:40px;
+	height:40px;
+}
+.location.on { background-image:url(location_on.png); }
+.location.off { background-image:url(location_off.png); }
+.stereoscopic.on { background-image:url(stereoscopic_on.png); }
+.stereoscopic.off { background-image:url(stereoscopic_off.png); }
+#locationbox {
+	position:absolute;
+	background-color:white;
+	left:50%;
+	top:25%;
+	transform:translate(-50%,-50%);
+	padding:8px;
+}
+</style>
+</head>
 <body>
 
 <script src="resources.js"></script>
@@ -9,17 +74,140 @@
 <script>
 function SharedPreferences()
 {
+	var preferences = {
+		'source_provider.0' : true,
+		'source_provider.1' : true,
+		'source_provider.2' : false,
+		'source_provider.3' : true,
+		'source_provider.4' : true,
+		'source_provider.5' : true,
+		'source_provider.6' : false,
+		'no_auto_locate' : false,
+		'longitude' : '29.8171779',
+		'latitude' : '-95.4012914',
+		'stereoscopic_fov' : 90,
+	};
+	var listeners = [];
+
+	for (var id in preferences)
+	{
+		var element = document.getElementById(id);
+		if (element == undefined)
+		{
+			continue;
+		}
+		if (element.type == 'checkbox')
+		{
+			element.checked = preferences[id];
+			element.onclick = (function (pref)
+			{
+				return function (e)
+				{
+					pref.setBoolean(e.target.id, e.target.checked);
+				};
+			})(this);
+		}
+		else if (element.type == 'text')
+		{
+			element.value = preferences[id];
+			element.onchange = (function (pref)
+			{
+				return function (e)
+				{
+					pref.setString(e.target.id, e.target.value);
+				};
+			})(this);
+		}
+	}
+
 	this.getBoolean = function (id, defaultValue)
 	{
-		return defaultValue;
+		if (preferences[id] == undefined)
+		{
+			preferences[id] = defaultValue;
+			return defaultValue;
+		}
+		return preferences[id];
+	};
+	
+	this.getString = function (id, defaultValue)
+	{
+		if (preferences[id] == undefined)
+		{
+			preferences[id] = defaultValue;
+			return defaultValue;
+		}
+		return preferences[id];
 	};
 
 	this.registerOnSharedPreferenceChangeListener = function (listener)
 	{
+		listeners.push(listener);
+	};
+
+	this.setBoolean = function (id, value)
+	{
+		preferences[id] = value;
+		listeners.forEach(function (listener)
+		{
+			listener.onSharedPreferenceChanged(this, id);
+		}, this);
+	};
+
+	this.setString = function (id, value)
+	{
+		preferences[id] = value;
+		listeners.forEach(function (listener)
+		{
+			listener.onSharedPreferenceChanged(this, id);
+		}, this);
 	};
 }
-
-var preferences = new SharedPreferences();
+var layerToggle =
+{
+	'leftbutton star on' : { id:'source_provider.0', value:false, next:'leftbutton star off'},
+	'leftbutton star off' : { id:'source_provider.0', value:true, next:'leftbutton star on'},
+	'leftbutton stars on' : { id:'source_provider.1', value:false, next:'leftbutton stars off'},
+	'leftbutton stars off' : { id:'source_provider.1', value:true, next:'leftbutton stars on'},
+	'leftbutton messier on' : { id:'source_provider.2', value:false, next:'leftbutton messier off'},
+	'leftbutton messier off' : { id:'source_provider.2', value:true, next:'leftbutton messier on'},
+	'leftbutton planet on' : { id:'source_provider.3', value:false, next:'leftbutton planet off'},
+	'leftbutton planet off' : { id:'source_provider.3', value:true, next:'leftbutton planet on'},
+	'leftbutton grid on' : { id:'source_provider.4', value:false, next:'leftbutton grid off'},
+	'leftbutton grid off' : { id:'source_provider.4', value:true, next:'leftbutton grid on'},
+	'leftbutton horizon on' : { id:'source_provider.5', value:false, next:'leftbutton horizon off'},
+	'leftbutton horizon off' : { id:'source_provider.5', value:true, next:'leftbutton horizon on'},
+	'leftbutton meteor on' : { id:'source_provider.6', value:false, next:'leftbutton meteor off'},
+	'leftbutton meteor off' : { id:'source_provider.6', value:true, next:'leftbutton meteor on'},
+	'rightbutton stereoscopic on' : { id:'stereoscopic', value:false, next:'rightbutton stereoscopic off'},
+	'rightbutton stereoscopic off' : { id:'stereoscopic', value:true, next:'rightbutton stereoscopic on'},
+};
+function togglePreference(element)
+{
+	var res = layerToggle[element.className];
+	if (!res)
+	{
+		console.log(element);
+		return;
+	}
+	preferences.setBoolean(res.id, res.value);
+	element.className = res.next;
+};
+function toggleLocationControls()
+{
+	var box = document.getElementById('locationbox');
+	var icon = document.querySelector('.location');
+	if (box.style.display == 'block')
+	{
+		box.style.display='none';
+		icon.className = 'rightbutton location off';
+	}
+	else
+	{
+		box.style.display='block';
+		icon.className = 'rightbutton location on';
+	}
+}
 </script>
 
 <script src="Color.js"></script>
@@ -97,8 +285,48 @@ var preferences = new SharedPreferences();
 <script src="provider/ephemeris/PlanetSource.js"></script>
 
 <div id="info"></div>
+
+
+<div id="view" style="display:inline-block;position:relative">
 <canvas width="640" height="480"></canvas>
-<div id="log">log<br></div>
+
+<div class="sidebarleft">
+<div class="leftbutton star on" onclick="togglePreference(this)"></div>
+<div class="leftbutton stars on" onclick="togglePreference(this)"></div>
+<div class="leftbutton messier off" onclick="togglePreference(this)"></div>
+<div class="leftbutton planet on" onclick="togglePreference(this)"></div>
+<div class="leftbutton meteor off" onclick="togglePreference(this)"></div>
+<div class="leftbutton grid on" onclick="togglePreference(this)"></div>
+<div class="leftbutton horizon on" onclick="togglePreference(this)"></div>
+</div>
+
+<div class="sidebarright">
+<div class="rightbutton location off" onclick="toggleLocationControls()"></div>
+<div class="rightbutton"></div>
+<div class="rightbutton"></div>
+<img class="rightbutton" src="north.png" onclick="setNorth()">
+<div class="rightbutton"></div>
+<div class="rightbutton stereoscopic on" onclick="togglePreference(this)"></div>
+<img class="rightbutton" src="fullscreen.png" onclick="requestFullScreen()">
+</div>
+
+<div id="locationbox" style="display:none">
+<div style="height:1.5em"><input type="checkbox" id="no_auto_locate">Use Coordinates</input></div>
+<div style="height:1.5em"><input type="text" id="longitude" style="float:right"></input>Longitude:</div>
+<div style="height:1.5em"><input type="text" id="latitude" style="float:right"></input>Latitude:</div>
+<div style="height:1.5em"><button style="float:right" onclick="toggleLocationControls()">Close</button></div>
+</div>
+
+</div>
+
+
+<!--
+<div>
+<input type="text" id="stereoscopic_fov">FOV</input><br>
+<br>
+</div>
+-->
+<div id="log" style="display:none">log<br></div>
 
 <script type="x-shader/x-vertex" id="vshTexture">
 attribute vec3 pos;
@@ -203,8 +431,22 @@ var info = document.querySelector('#info');
 var gl = canvas.getContext('webgl');
 
 
+var preferences = new SharedPreferences();
 
+function updateButton(name, source, def)
+{
+	var element = document.querySelector('.' + name);
+	var state = preferences.getBoolean(source, def)? 'on' : 'off'
+	element.className = element.classList[0] + ' ' + name + ' ' + state;
+}
 
+updateButton('star', 'source_provider.0', true);
+updateButton('stars', 'source_provider.1', true);
+updateButton('messier', 'source_provider.2', true);
+updateButton('planet', 'source_provider.3', true);
+updateButton('meteor', 'source_provider.6', true);
+updateButton('grid', 'source_provider.4', true);
+updateButton('horizon', 'source_provider.5', true);
 
 // StardroidApplication
 var model = null;
@@ -254,17 +496,76 @@ function getResources()
 getModel();
 getLayerManager(null, preferences, ResourceManager);
 
+// geolocation
+function LocationController()
+{
+	var hwLocation = null;
+	var swLocation = null;
+
+	this.updateSWLocation = function ()
+	{
+		var longitude = parseFloat(preferences.getString('longitude', '29.8171779'));
+		var latitude = parseFloat(preferences.getString('latitude', '-95.4012914'));
+		if (isNaN(longitude))
+		{
+			longitude = 29.8171779;
+		}
+		if (isNaN(latitude))
+		{
+			latitude = -95.4012914;
+		}
+		swLocation = new LatLong(longitude, latitude);
+		if (preferences.getBoolean('no_auto_locate', false))
+		{
+			model.setLocation(swLocation);
+		}
+	};
+	
+	this.updateHWLocation = function (position)
+	{
+		hwLocation = new LatLong(position.coords.latitude,	position.coords.longitude);
+		if (!preferences.getBoolean('no_auto_locate', false))
+		{
+			model.setLocation(hwLocation);
+		}
+	};
+	
+	this.errorHWLocation = function (error)
+	{
+		console.log(error);
+		model.setLocation(swLocation);
+	};
+	
+	this.onSharedPreferenceChanged = function (pref, key)
+	{
+		if (key == 'no_auto_locate')
+		{
+			if (preferences.getBoolean('no_auto_locate', false) || !hwLocation)
+			{
+				model.setLocation(swLocation);
+			}
+			else
+			{
+				model.setLocation(hwLocation);
+			}
+		}
+		else if (key == 'longitude' || key == 'latitude')
+		{
+			this.updateSWLocation();
+		}
+	};
+	
+	this.updateSWLocation();
+	model.setLocation(swLocation);
+	
+	preferences.registerOnSharedPreferenceChangeListener(this);
+
+	navigator.geolocation.getCurrentPosition(this.updateHWLocation, this.errorHWLocation);
+}
+var locationController = new LocationController();
+
 //model.setAutoUpdatePointing(false);
 //model.setPointing(new Vector3(-1,0,0), new Vector3(0,1,0));
-navigator.geolocation.getCurrentPosition(function (position)
-{
-	var newLocation = new LatLong(position.coords.latitude,	position.coords.longitude);
-	model.setLocation(newLocation);
-	console.log('set location ' + position.coords.latitude + ' ' + position.coords.longitude);
-}, function (error)
-{
-	console.log(error);
-});
 model.setPhoneSensorValues(new Vector3(0,-9.8,0), new Vector3(0,0,-1));
 
 
@@ -329,6 +630,7 @@ var gDeviceOrientation = null;
 
 if (navigator.getVRDevices)
 {
+	updateButton('stereoscopic', 'stereoscopic', true);
 	navigator.getVRDevices().then(function(devices)
 	{
 		for (var i = 0; i < devices.length; ++i)
@@ -357,6 +659,7 @@ if (navigator.getVRDevices)
 }
 else
 {
+	updateButton('stereoscopic', 'stereoscopic', false);
 	// respond to device orientation event
 	window.addEventListener('deviceorientation', function (e)
 	{
@@ -437,6 +740,27 @@ var view = new Float32Array(16);
 var acceleration = new Vector3(0,0,0);
 var magneticNorth = new Vector3(0,0,0);
 
+var northReset = false;
+var northAngle = 0;
+
+function setNorth()
+{
+	northReset = true;
+}
+
+function updateNorth(magneticNorth)
+{
+	if (northReset)
+	{
+		northAngle = -Math.atan2(magneticNorth.x, magneticNorth.z);
+		northReset = false;
+	}
+	var x = magneticNorth.x * Math.cos(northAngle) + magneticNorth.z * Math.sin(northAngle);
+	var z = -magneticNorth.x * Math.sin(northAngle) + magneticNorth.z * Math.cos(northAngle);
+	magneticNorth.x = x;
+	magneticNorth.z = z;
+}
+
 // drawing loop
 function step(timestamp)
 {
@@ -446,6 +770,7 @@ function step(timestamp)
 		matrixSetQuaternion(view, state.orientation);
 		acceleration.assign(-view[4], -view[5], -view[6]);
 		magneticNorth.assign(view[8], view[9], view[10]);
+		updateNorth(magneticNorth);
 		model.setPhoneSensorValues(acceleration, magneticNorth);
 	}
 	else if (gDeviceOrientation)
@@ -456,6 +781,7 @@ function step(timestamp)
 			gDeviceOrientation.tiltFB * MathUtil.DEGREES_TO_RADIANS);
 		acceleration.assign(-view[4], -view[5], -view[6]);
 		magneticNorth.assign(view[8], view[9], view[10]);
+		updateNorth(magneticNorth);
 		model.setPhoneSensorValues(acceleration, magneticNorth);
 	}
 
@@ -482,7 +808,7 @@ window.requestAnimationFrame(step);
 function requestFullScreen()
 {
 	var options;
-	if (gHMD)
+	if (gHMD && preferences.getBoolean('stereoscopic', true))
 	{
 		options = {vrDisplay:gHMD};
 	}
@@ -512,23 +838,43 @@ function onFullScreenChange()
 	}
 	else
 	{
-		canvas.width = 640;
-		canvas.height = 480;
+		canvas.width = document.body.offsetWidth;
+		canvas.height = document.body.offsetHeight;
 		isFullScreen = false;
 	}
 	renderer.onSurfaceChanged(gl, canvas.width, canvas.height);
-	if (isFullScreen && gHMD)
+	if (isFullScreen && preferences.getBoolean('stereoscopic', false))
 	{
-		var leftFOV = gHMD.getEyeParameters('left').currentFieldOfView;
-		var rightFOV = gHMD.getEyeParameters('right').currentFieldOfView;
-		var leftMatrix = Matrix4x4.createFOVProjection(leftFOV);
-		var rightMatrix = Matrix4x4.createFOVProjection(rightFOV);
-		renderer.enableStereoscopic(true, leftMatrix, rightMatrix);
+		if (gHMD)
+		{
+			var leftFOV = gHMD.getEyeParameters('left').currentFieldOfView;
+			var rightFOV = gHMD.getEyeParameters('right').currentFieldOfView;
+			var leftMatrix = Matrix4x4.createFOVProjection(leftFOV);
+			var rightMatrix = Matrix4x4.createFOVProjection(rightFOV);
+			renderer.enableStereoscopic(true, leftMatrix, rightMatrix);
+			return;
+		}
+		else 
+		{
+			var aspect = 2 * screen.height / screen.width;
+			var fov = parseFloat(preferences.getString('stereoscopic_fov', '90'));
+			if (isNaN(fov)) fov = 90;
+			var leftFOV = 
+			{
+				leftDegrees : fov/2,
+				rightDegrees : fov/2,
+				upDegrees : aspect*fov/2,
+				downDegrees : aspect*fov/2,
+			};
+			var rightFOV = leftFOV;
+			var leftMatrix = Matrix4x4.createFOVProjection(leftFOV);
+			var rightMatrix = Matrix4x4.createFOVProjection(rightFOV);
+			renderer.enableStereoscopic(true, leftMatrix, rightMatrix);
+			return;
+		}
 	}
-	else
-	{
-		renderer.enableStereoscopic(false);
-	}
+
+	renderer.enableStereoscopic(false);
 }
 
 if (canvas.requestFullScreen)
@@ -544,17 +890,22 @@ else if (canvas.mozRequestFullScreen)
 	document.addEventListener('mozfullscreenchange', onFullScreenChange);
 }
 
-// events that trigger fullscreen
-canvas.onclick = requestFullScreen;
-
-window.addEventListener('keydown', function (e)
+function resizeView()
 {
-	// alt+enter was a traditional full screen hot key
-	if (e.which == 13 && e.altKey)
+	if (isFullScreen)
 	{
-		requestFullScreen();
+		return;
 	}
-}, true);
+
+	canvas.width = document.body.offsetWidth;
+	canvas.height = document.body.offsetHeight;
+
+	renderer.onSurfaceChanged(gl, canvas.width, canvas.height);
+}
+
+window.addEventListener('resize', resizeView, false);
+
+resizeView();
 
 </script>
 </body>

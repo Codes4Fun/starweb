@@ -16,7 +16,7 @@ Give it a Try! http://codes4fun.github.io/starweb/
 [stardroid] is the project for the [Sky Map] android app, written in Java with the Android SDK.
 
 ### Version
-0.5.0
+0.7.0
 
 ### NOTES
 
@@ -26,8 +26,7 @@ To enable fullscreen mode (which includes WebVR) click the webgl viewport. This 
 
 #### TODO
 
- - Implement UI for settings/preferences.
- - Support Google Cardboard mobile browsers without WebVR.
+ - Save/Load preferences
  - Port SkyRegionMap (optimization).
  - Lots more testing!
 
@@ -36,9 +35,11 @@ To enable fullscreen mode (which includes WebVR) click the webgl viewport. This 
 I originally intended this to be a 1 week project and it is already going past that.
 
 Things that I may not complete given how much time I have:
+ - Layers for Meteor Showers, Messier Objects. Need know what to look for to test them.
  - multi-language support
  - fix text aliasing issues, introduced to get full 3d text in VR.
  - searching
+ - night vision mode
 
 I accept bitcoins!
 [17Mqj42oV1xtMWt16MBPyveZZXKUaJFH1H]
