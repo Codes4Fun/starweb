@@ -31,8 +31,8 @@ function LabelMaker(fullColor)
 		mTexture = textureManager.createTexture(gl);
 		mTexture.bind(gl);
 
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -104,7 +104,7 @@ function LabelMaker(fullColor)
 				measuredTextWidth = ctx.measureText(label.getText()).width;
 
 				height = fontSize;
-				width = measuredTextWidth;
+				width = measuredTextWidth + 1;
 
 				fontSize--;
 			} while (fontSize > 0 && width > mStrikeWidth);
@@ -117,7 +117,7 @@ function LabelMaker(fullColor)
 				// No room, go to the next line:
 				u = 0;
 				nextU = width;
-				v += lineHeight;
+				v += lineHeight + 1;
 				lineHeight = 0;
 			}
 			else 
