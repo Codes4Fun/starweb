@@ -303,9 +303,14 @@ function SkyRenderer(res)
 		upX *= oneOverUpLen;
 		upY *= oneOverUpLen;
 		upZ *= oneOverUpLen;
+		
+		var lookDir = new GeocentricCoordinates(dirX, dirY, dirZ);
+		var upDir = new GeocentricCoordinates(upX, upY, upZ);
+		var rightDir = VectorUtil.crossProduct(lookDir, upDir);
 
-		mRenderState.setLookDir(new GeocentricCoordinates(dirX, dirY, dirZ));
-		mRenderState.setUpDir(new GeocentricCoordinates(upX, upY, upZ));
+		mRenderState.setLookDir(lookDir);
+		mRenderState.setUpDir(upDir);
+		mRenderState.setRightDir(rightDir);
 
 		mMustUpdateView = true;
 

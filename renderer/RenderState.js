@@ -5,6 +5,7 @@ function RenderState()
 	var mCameraPos = new GeocentricCoordinates(0, 0, 0);
 	var mLookDir = new GeocentricCoordinates(1, 0, 0);
 	var mUpDir = new GeocentricCoordinates(0, 1, 0);
+	var mRightDir = new GeocentricCoordinates(0, 0, 1);
 	var mRadiusOfView = 45;	// in degrees
 	var mUpAngle = 0;
 	var mCosUpAngle = 1;
@@ -35,6 +36,11 @@ function RenderState()
 	this.getUpDir = function ()
 	{
 		return mUpDir;
+	};
+	
+	this.getRightDir = function ()
+	{
+		return mRightDir;
 	};
 
 	this.getRadiusOfView = function ()
@@ -106,6 +112,11 @@ function RenderState()
 	this.setUpDir = function (dir)
 	{
 		mUpDir = dir.copy();
+	};
+	
+	this.setRightDir = function (dir)
+	{
+		mRightDir = dir.copy();
 	};
 
 	this.setRadiusOfView = function (radius)

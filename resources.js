@@ -32,17 +32,17 @@ var R = {
 		stars_texture : 'drawable/stars_texture.png',
 	},
 	string: {
-		sun : 107 + 0x7f0a0000,
-		moon : 108 + 0x7f0a0000,
-		mercury : 109 + 0x7f0a0000,
-		venus : 110 + 0x7f0a0000,
-
-		mars : 112 + 0x7f0a0000,
-		jupiter : 113 + 0x7f0a0000,
-		saturn : 114 + 0x7f0a0000,
-		uranus : 115 + 0x7f0a0000,
-		neptune : 116 + 0x7f0a0000,
-		pluto : 117 + 0x7f0a0000,
+		show_sky_gradient : 36 + 0x7f0a0000,
+		
+		ecliptic : 41 + 0x7f0a0000,
+		north_pole : 138 + 0x7f0a0000,
+		south_pole : 139 + 0x7f0a0000,
+		zenith : 54 + 0x7f0a0000,
+		nadir : 55 + 0x7f0a0000,
+		north : 56 + 0x7f0a0000,
+		east : 57 + 0x7f0a0000,
+		west : 58 + 0x7f0a0000,
+		south : 59 + 0x7f0a0000,
 
 		time_travel_stopped : 81 + 0x7f0a0000,
 		time_travel_second_speed : 82 + 0x7f0a0000,
@@ -58,15 +58,17 @@ var R = {
 		time_travel_day_speed_back : 92 + 0x7f0a0000,
 		time_travel_week_speed_back : 93 + 0x7f0a0000,
 		
-		ecliptic : 41 + 0x7f0a0000,
-		north_pole : 138 + 0x7f0a0000,
-		south_pole : 139 + 0x7f0a0000,
-		zenith : 54 + 0x7f0a0000,
-		nadir : 55 + 0x7f0a0000,
-		north : 56 + 0x7f0a0000,
-		east : 57 + 0x7f0a0000,
-		west : 58 + 0x7f0a0000,
-		south : 59 + 0x7f0a0000,
+		sun : 107 + 0x7f0a0000,
+		moon : 108 + 0x7f0a0000,
+		mercury : 109 + 0x7f0a0000,
+		venus : 110 + 0x7f0a0000,
+
+		mars : 112 + 0x7f0a0000,
+		jupiter : 113 + 0x7f0a0000,
+		saturn : 114 + 0x7f0a0000,
+		uranus : 115 + 0x7f0a0000,
+		neptune : 116 + 0x7f0a0000,
+		pluto : 117 + 0x7f0a0000,
 	}
 };
 

@@ -128,10 +128,10 @@ function AbstractLayer(resources)
 			return;
 		}
 
+		this.setSources(imageSources, updateTypes, ImageSource.name, renderer);
 		this.setSources(textSources, updateTypes, TextSource.name, renderer);
 		this.setSources(pointSources, updateTypes, PointSource.name, renderer);
 		this.setSources(lineSources, updateTypes, LineSource.name, renderer);
-		this.setSources(imageSources, updateTypes, ImageSource.name, renderer);
 	};
 
 	this.redraw = this.redrawInternal;
