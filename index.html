@@ -85,7 +85,7 @@ function SharedPreferences()
 		'no_auto_locate' : false,
 		'longitude' : '29.8171779',
 		'latitude' : '-95.4012914',
-		'stereoscopic_fov' : 90,
+		'stereoscopic_fov' : '60',
 	};
 	var listeners = [];
 
@@ -670,7 +670,7 @@ else
 		// alpha is the compass direction the device is facing in degrees
 		gDeviceOrientation.dir = e.alpha || 0;
 		// beta is the front-to-back tilt in degrees, where front is positive
-		gDeviceOrientation.tiltFB = (e.beta || 90) - 90;
+		gDeviceOrientation.tiltFB = (e.beta || 0);
 		// gamma is the left-to-right tilt in degrees, where right is positive
 		gDeviceOrientation.tiltLR = e.gamma || 0;
 	}, true);
@@ -735,6 +735,43 @@ function matrixSetRotation(out, heading, attitude, bank)
 	out[15] = 1;
 }
 
+function rotateX(angle, vec)
+{
+	var c = Math.cos(angle);
+	var s = Math.sin(angle);
+	//var nx = vec.x;
+	var ny = vec.y * c + vec.z * s;
+	var nz = vec.z * c - vec.y * s;
+	//vec.x = nx;
+	vec.y = ny;
+	vec.z = nz;
+}
+
+function rotateY(angle, vec)
+{
+	var c = Math.cos(angle);
+	var s = Math.sin(angle);
+	var nx = vec.x * c - vec.z * s;
+	//var ny = vec.y;
+	var nz = vec.z * c + vec.x * s;
+	vec.x = nx;
+	//vec.y = ny;
+	vec.z = nz;
+}
+
+
+function rotateZ(angle, vec)
+{
+	var c = Math.cos(angle);
+	var s = Math.sin(angle);
+	var nx = vec.x * c + vec.y * s;
+	var ny = vec.y * c - vec.x * s;
+	//var nz = vec.z;
+	vec.x = nx;
+	vec.y = ny;
+	//vec.z = nz;
+}
+
 var view = new Float32Array(16);
 
 var acceleration = new Vector3(0,0,0);
@@ -761,6 +798,8 @@ function updateNorth(magneticNorth)
 	magneticNorth.z = z;
 }
 
+var orientationAngle = 0;
+
 // drawing loop
 function step(timestamp)
 {
@@ -775,12 +814,39 @@ function step(timestamp)
 	}
 	else if (gDeviceOrientation)
 	{
-		matrixSetRotation(view,
-			gDeviceOrientation.dir * MathUtil.DEGREES_TO_RADIANS,
-			-gDeviceOrientation.tiltLR * MathUtil.DEGREES_TO_RADIANS,
-			gDeviceOrientation.tiltFB * MathUtil.DEGREES_TO_RADIANS);
-		acceleration.assign(-view[4], -view[5], -view[6]);
-		magneticNorth.assign(view[8], view[9], view[10]);
+		var dir = gDeviceOrientation.dir * MathUtil.DEGREES_TO_RADIANS;
+		var tiltLR = gDeviceOrientation.tiltLR * MathUtil.DEGREES_TO_RADIANS;
+		var tiltFB = gDeviceOrientation.tiltFB * MathUtil.DEGREES_TO_RADIANS;
+
+		acceleration.assign(0, 0, -1);
+		magneticNorth.assign(0, 1, 0);
+
+		if (screen.mozOrientation)
+		{
+			rotateY(tiltLR, acceleration);
+			rotateX(tiltFB, acceleration);
+
+			rotateZ(dir, magneticNorth);
+			rotateY(tiltLR, magneticNorth);
+			rotateX(tiltFB, magneticNorth);
+		}
+		else
+		{
+			rotateX(tiltFB, acceleration);
+			rotateY(tiltLR, acceleration);
+
+			rotateZ(dir, magneticNorth);
+			rotateX(tiltFB, magneticNorth);
+			rotateY(tiltLR, magneticNorth);
+		}
+
+		rotateZ(orientationAngle * Math.PI / 180, acceleration);
+		rotateZ(orientationAngle * Math.PI / 180, magneticNorth);
+		
+		magneticNorth.x = -magneticNorth.x;
+		magneticNorth.y = -magneticNorth.y;
+		magneticNorth.z = -magneticNorth.z;
+
 		updateNorth(magneticNorth);
 		model.setPhoneSensorValues(acceleration, magneticNorth);
 	}
@@ -857,7 +923,7 @@ function onFullScreenChange()
 		else 
 		{
 			var aspect = 2 * screen.height / screen.width;
-			var fov = parseFloat(preferences.getString('stereoscopic_fov', '90'));
+			var fov = parseFloat(preferences.getString('stereoscopic_fov', '60'));
 			if (isNaN(fov)) fov = 90;
 			var leftFOV = 
 			{
@@ -892,9 +958,36 @@ else if (canvas.mozRequestFullScreen)
 
 function resizeView()
 {
-	if (isFullScreen)
+	if (screen.orientation)
 	{
-		return;
+		if (screen.orientation.angle != undefined)
+		{
+			orientationAngle = -screen.orientation.angle;
+		}
+	}
+	else if (screen.mozOrientation)
+	{
+		var orientation = screen.mozOrientation;
+		if (orientation === "landscape-primary")
+		{
+			orientationAngle = 0;
+		}
+		else if (orientation === "landscape-secondary")
+		{
+			orientationAngle = 180;
+		}
+		else if (orientation === "portrait-secondary")
+		{
+			orientationAngle = 90;
+		}
+		else //if (orientation === "portrait-primary")
+		{
+			orientationAngle = -90;
+		}
+		if (navigator.userAgent.indexOf('Mobile') != -1)
+		{
+			orientationAngle = -orientationAngle - 90;
+		}
 	}
 
 	canvas.width = document.body.offsetWidth;
