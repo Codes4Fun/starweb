@@ -9,9 +9,9 @@ starweb is a port of [stardroid] to html/javascript/webgl. In addition it provid
   - [Firefox MozVR]
   - [Chromium WebVR] (geolocation service broken)
 
-It should also work with Google Cardboard, it has been tested on Firefox Mobile without WebVR.
+It should also work with Google Cardboard with WebVR browser but that is untested, but it has been tested on Mobile Chrome and Firefox browsers without WebVR, but there may still be issues with that.
 
-Give it a Try! http://codes4fun.github.io/starweb/
+Give it a Try! (maybe read usage instructions below) http://codes4fun.github.io/starweb/
 
 [stardroid] is the project for the [Sky Map] android app, written in Java with the Android SDK.
 
@@ -22,7 +22,37 @@ Give it a Try! http://codes4fun.github.io/starweb/
 
 #### USAGE
 
-To enable fullscreen mode (which includes WebVR) click the webgl viewport. This is temporary until real UI is implemented.
+With WebVR and an HMD on the desktop:
+1. Turn on your HMD.
+2. Start your [WebVR] enabled browser.
+3. Navigate to http://codes4fun.github.io/starweb/
+3. If the HMD is detected you will see the HMD icon on the bottom right as orange or white if it is disabled.
+4. If using ChromeVR set your real longitude/latitude by pressing the top right location button (hint:you can get your long/lat from maps.google.com URL).
+5. Face your HMD north and press the set north compass button on the right.
+6. Press the resize arrows button on the lower right and it will show up in your HMD.
+7. Put on your HMD and find the planets!
+
+Web browser (Chrome or Firefox) without WebVR on a mobile device:
+1. Start the browser.
+2. Navigate to http://codes4fun.github.io/starweb/
+3. Click the HMD icon to turn it orange.
+4. Press the resize arrows button on the lower right and it should go fullscreen with left and right images.
+5. Place inside a google cardboard case and put it on!
+
+Buttons on the left hide/show layers:
+ - stars
+ - constellations
+ - messier (currently not implemented)
+ - planets
+ - meteor showers (not implemented)
+ - grid
+ - horizon
+
+Buttons on the right:
+ - set location manually
+ - set current direction as north
+ - enable/disable stereoscopic 3d/vr in fullscreen
+ - show full screen.
 
 #### TODO
 
