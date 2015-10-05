@@ -74,21 +74,43 @@ html, body {
 <script>
 function SharedPreferences()
 {
-	var preferences = {
-		'source_provider.0' : true,
-		'source_provider.1' : true,
-		'source_provider.2' : false,
-		'source_provider.3' : true,
-		'source_provider.4' : true,
-		'source_provider.5' : true,
-		'source_provider.6' : false,
-		'no_auto_locate' : false,
-		'longitude' : '29.8171779',
-		'latitude' : '-95.4012914',
-		'stereoscopic_fov' : '60',
-	};
+	var preferenceVersion = '1';
 	var listeners = [];
-
+	
+	var preferences;
+	if (localStorage != undefined && (preferences = localStorage.getItem('preferences')) != undefined)
+	{
+		try {
+			preferences = JSON.parse(preferences);
+			if (preferences.version != preferenceVersion)
+			{
+				prefernces = undefined;
+			}
+		}
+		catch (e)
+		{
+			preferences = undefined;
+		}
+	}
+	
+	if (!preferences)
+	{
+		preferences = {
+			version : preferenceVersion,
+			'source_provider.0' : true,
+			'source_provider.1' : true,
+			'source_provider.2' : false,
+			'source_provider.3' : true,
+			'source_provider.4' : true,
+			'source_provider.5' : true,
+			'source_provider.6' : false,
+			no_auto_locate : false,
+			longitude : '29.8171779',
+			latitude : '-95.4012914',
+			stereoscopic_fov : '60',
+		};
+	}
+	
 	for (var id in preferences)
 	{
 		var element = document.getElementById(id);
@@ -119,6 +141,14 @@ function SharedPreferences()
 			})(this);
 		}
 	}
+
+	window.addEventListener('unload', function ()
+	{
+		if (localStorage)
+		{
+			localStorage.setItem('preferences', JSON.stringify(preferences));
+		}
+	}, true);
 
 	this.getBoolean = function (id, defaultValue)
 	{
@@ -670,7 +700,7 @@ else
 		// alpha is the compass direction the device is facing in degrees
 		gDeviceOrientation.dir = e.alpha || 0;
 		// beta is the front-to-back tilt in degrees, where front is positive
-		gDeviceOrientation.tiltFB = (e.beta || 0);
+		gDeviceOrientation.tiltFB = (e.beta || 90);
 		// gamma is the left-to-right tilt in degrees, where right is positive
 		gDeviceOrientation.tiltLR = e.gamma || 0;
 	}, true);

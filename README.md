@@ -23,6 +23,7 @@ Give it a Try! (maybe read usage instructions below) http://codes4fun.github.io/
 #### USAGE
 
 With WebVR and an HMD on the desktop:
+
 1. Turn on your HMD.
 2. Start your [WebVR] enabled browser.
 3. Navigate to http://codes4fun.github.io/starweb/
@@ -33,6 +34,7 @@ With WebVR and an HMD on the desktop:
 7. Put on your HMD and find the planets!
 
 Web browser (Chrome or Firefox) without WebVR on a mobile device:
+
 1. Start the browser.
 2. Navigate to http://codes4fun.github.io/starweb/
 3. Click the HMD icon to turn it orange.
