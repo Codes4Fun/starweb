@@ -13,6 +13,8 @@ function AbstractLayer(resources)
 
 	var renderer;
 
+	this.visible = true;
+
 	this.getResources = function () 
 	{
 		return resources;
@@ -27,6 +29,8 @@ function AbstractLayer(resources)
 
 	this.setVisible = function (visible) 
 	{
+		this.visible = visible;
+
 		if (renderer == null) 
 		{
 			Log.w(TAG, "Renderer not set - aborting " + this.constructor.name);
@@ -99,6 +103,10 @@ function AbstractLayer(resources)
 		{
 			manager = this.createRenderManager(clazz, atomic);
 			renderMap[clazz] = manager;
+			if (!this.visible && renderer)
+			{
+				manager.queueEnabled(this.visible, renderer);
+			}
 		}
 		// Blog.d(this, "       " + clazz.getSimpleName() + " " + sources.size());
 		manager.queueObjects(sources, updateType, atomic);
