@@ -24,15 +24,14 @@ function PointObjectManager(layer, textureManager)
 	var COMPUTE_REGIONS = true;
 	var mNumPoints = 0;
 
-	var mSkyRegions = []; // new SkyRegionMap<RegionData>();
+	var mSkyRegions = new SkyRegionMap();
 
 	var mTextureRef = null;
 
 	// We want to initialize the labels of a sky region to an empty set of data.
-	/*mSkyRegions.setRegionDataFactory(
-		new SkyRegionMap.RegionDataFactory<RegionData>() {
-			public RegionData construct() { return new RegionData(); }
-	});*/
+	mSkyRegions.setRegionDataFactory({
+		construct : function () { return new RegionData(); }
+	});
 
 	this.updateObjects = function (points, updateType) 
 	{
@@ -60,11 +59,9 @@ function PointObjectManager(layer, textureManager)
 
 		mNumPoints = points.length;
 
-		mSkyRegions = [new RegionData()];//.clear();
-		mSkyRegions[0].sources = points;
-		gSkyRegions = mSkyRegions;
+		mSkyRegions.clear();
 
-		/*if (COMPUTE_REGIONS) 
+		if (COMPUTE_REGIONS) 
 		{
 			// Find the region for each point, and put it in a separate list
 			// for that region.
@@ -73,16 +70,16 @@ function PointObjectManager(layer, textureManager)
 				var region = points.length < MINIMUM_NUM_POINTS_FOR_REGIONS
 					? SkyRegionMap.CATCHALL_REGION_ID
 					: SkyRegionMap.getObjectRegion(point.getLocation());
-				mSkyRegions.getRegionData(region).sources.add(point);
+				mSkyRegions.getRegionData(region).sources.push(point);
 			});
 		}
 		else
 		{
 			mSkyRegions.getRegionData(SkyRegionMap.CATCHALL_REGION_ID).sources = points;
-		}*/
+		}
 
 		// Generate the resources for all of the regions.
-		mSkyRegions./*getDataForAllRegions().*/forEach(function (data)
+		mSkyRegions.getDataForAllRegions().forEach(function (data)
 		{
 			var numVertices = 4 * data.sources.length;
 			var numIndices = 6 * data.sources.length;
@@ -182,7 +179,7 @@ function PointObjectManager(layer, textureManager)
 	this.reload = function (gl, fullReload) 
 	{
 		mTextureRef = this.textureManager().getTextureFromResource(gl, R.drawable.stars_texture);
-		mSkyRegions./*getDataForAllRegions().*/forEach( function (data) 
+		mSkyRegions.getDataForAllRegions().forEach( function (data) 
 		{
 			data.mVertexBuffer.reload();
 			data.mColorBuffer.reload();
@@ -219,7 +216,7 @@ function PointObjectManager(layer, textureManager)
 		// Render all of the active sky regions.
 		var nightVisionMode = this.getRenderState().getNightVisionMode();
 		var activeRegions = this.getRenderState().getActiveSkyRegions();
-		var activeRegionData = mSkyRegions;//.getDataForActiveRegions(activeRegions);
+		var activeRegionData = mSkyRegions.getDataForActiveRegions(activeRegions);
 		activeRegionData.forEach (function (data) 
 		{
 			if (data.mVertexBuffer.size() == 0) 
