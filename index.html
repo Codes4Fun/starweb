@@ -74,9 +74,9 @@ html, body {
 <script>
 function SharedPreferences()
 {
-	var preferenceVersion = '1';
+	var preferenceVersion = '2';
 	var listeners = [];
-	
+
 	var preferences;
 	if (localStorage != undefined && (preferences = localStorage.getItem('preferences')) != undefined)
 	{
@@ -84,7 +84,7 @@ function SharedPreferences()
 			preferences = JSON.parse(preferences);
 			if (preferences.version != preferenceVersion)
 			{
-				prefernces = undefined;
+				preferences = undefined;
 			}
 		}
 		catch (e)
@@ -92,7 +92,7 @@ function SharedPreferences()
 			preferences = undefined;
 		}
 	}
-	
+
 	if (!preferences)
 	{
 		preferences = {
@@ -105,12 +105,15 @@ function SharedPreferences()
 			'source_provider.5' : true,
 			'source_provider.6' : false,
 			no_auto_locate : false,
-			longitude : '29.8171779',
-			latitude : '-95.4012914',
+			latitude : '37.235',
+			longitude : '-115.811111',
+			hwLatitude : '37.235',
+			hwLongitude : '-115.811111',
+			northAngle : '0',
 			stereoscopic_fov : '60',
 		};
 	}
-	
+
 	for (var id in preferences)
 	{
 		var element = document.getElementById(id);
@@ -342,8 +345,8 @@ function toggleLocationControls()
 
 <div id="locationbox" style="display:none">
 <div style="height:1.5em"><input type="checkbox" id="no_auto_locate">Use Coordinates</input></div>
-<div style="height:1.5em"><input type="text" id="longitude" style="float:right"></input>Longitude:</div>
 <div style="height:1.5em"><input type="text" id="latitude" style="float:right"></input>Latitude:</div>
+<div style="height:1.5em"><input type="text" id="longitude" style="float:right"></input>Longitude:</div>
 <div style="height:1.5em"><button style="float:right" onclick="toggleLocationControls()">Close</button></div>
 </div>
 
@@ -534,17 +537,17 @@ function LocationController()
 
 	this.updateSWLocation = function ()
 	{
-		var longitude = parseFloat(preferences.getString('longitude', '29.8171779'));
-		var latitude = parseFloat(preferences.getString('latitude', '-95.4012914'));
-		if (isNaN(longitude))
-		{
-			longitude = 29.8171779;
-		}
+		var latitude = parseFloat(preferences.getString('latitude', '37.235'));
+		var longitude = parseFloat(preferences.getString('longitude', '-115.811111'));
 		if (isNaN(latitude))
 		{
-			latitude = -95.4012914;
+			latitude = 37.235;
 		}
-		swLocation = new LatLong(longitude, latitude);
+		if (isNaN(longitude))
+		{
+			longitude = -115.811111;
+		}
+		swLocation = new LatLong(latitude, longitude);
 		if (preferences.getBoolean('no_auto_locate', false))
 		{
 			model.setLocation(swLocation);
@@ -554,18 +557,20 @@ function LocationController()
 	this.updateHWLocation = function (position)
 	{
 		hwLocation = new LatLong(position.coords.latitude,	position.coords.longitude);
+		preferences.setString('hwLatitude', position.coords.latitude.toString());
+		preferences.setString('hwLongitude', position.coords.longitude.toString());
 		if (!preferences.getBoolean('no_auto_locate', false))
 		{
 			model.setLocation(hwLocation);
 		}
 	};
-	
+
 	this.errorHWLocation = function (error)
 	{
 		console.log(error);
 		model.setLocation(swLocation);
 	};
-	
+
 	this.onSharedPreferenceChanged = function (pref, key)
 	{
 		if (key == 'no_auto_locate')
@@ -579,15 +584,22 @@ function LocationController()
 				model.setLocation(hwLocation);
 			}
 		}
-		else if (key == 'longitude' || key == 'latitude')
+		else if (key == 'latitude' || key == 'longitude')
 		{
 			this.updateSWLocation();
 		}
 	};
-	
+
 	this.updateSWLocation();
-	model.setLocation(swLocation);
-	
+	if (!preferences.getBoolean('no_auto_locate', false))
+	{
+		// get last saved hardware location
+		var latitude = parseFloat(preferences.getString('hwLatitude', '37.235'));
+		var longitude = parseFloat(preferences.getString('hwLongitude', '-115.811111'));
+		hwLocation = new LatLong(latitude, longitude);
+		model.setLocation(hwLocation);
+	}
+
 	preferences.registerOnSharedPreferenceChangeListener(this);
 
 	navigator.geolocation.getCurrentPosition(this.updateHWLocation, this.errorHWLocation);
@@ -808,7 +820,7 @@ var acceleration = new Vector3(0,0,0);
 var magneticNorth = new Vector3(0,0,0);
 
 var northReset = false;
-var northAngle = 0;
+var northAngle = parseFloat(preferences.getString('northAngle', '0'));
 
 function setNorth()
 {
@@ -820,6 +832,7 @@ function updateNorth(magneticNorth)
 	if (northReset)
 	{
 		northAngle = -Math.atan2(magneticNorth.x, magneticNorth.z);
+		preferences.setString('northAngle', northAngle.toString());
 		northReset = false;
 	}
 	var x = magneticNorth.x * Math.cos(northAngle) + magneticNorth.z * Math.sin(northAngle);
