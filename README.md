@@ -56,12 +56,6 @@ Buttons on the right:
  - enable/disable stereoscopic 3d/vr in fullscreen
  - show full screen.
 
-#### TODO
-
- - Save/Load preferences
- - Port SkyRegionMap (optimization).
- - Lots more testing!
-
 #### MISC
 
 I originally intended this to be a 1 week project and it is already going past that.
@@ -72,6 +66,10 @@ Things that I may not complete given how much time I have:
  - fix text aliasing issues, introduced to get full 3d text in VR.
  - searching
  - night vision mode
+
+Improvements for VR:
+ - Small space option (room size distance for example), need head position tracking to be integrated.
+ - maybe try to used fixed labels instead of rotating them by head orientation.
 
 I accept bitcoins!
 [17Mqj42oV1xtMWt16MBPyveZZXKUaJFH1H]

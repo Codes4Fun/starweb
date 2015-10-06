@@ -19,13 +19,12 @@ function LabelObjectManager(layer, textureManager)
 	var mLabelPaint = mLabelCanvas.getContext('2d');
 	var mLabelMaker = null;
 	var mLabels = [];
-	var mSkyRegions = [];//new SkyRegionMap<ArrayList<Label>>(); 
+	var mSkyRegions = new SkyRegionMap();
 
     // We want to initialize the labels of a sky region to an empty list.
-    /*mSkyRegions.setRegionDataFactory(
-        new SkyRegionMap.RegionDataFactory<ArrayList<Label>>() {
-          public ArrayList<Label> construct() { return new ArrayList<Label>(); }
-        });*/
+    mSkyRegions.setRegionDataFactory({ construct : function () {
+		return [];
+    }});
 
     // A quad with size 1 on each size, so we just need to multiply
     // by the label's width and height to get it to the right size for each
@@ -137,10 +136,10 @@ function LabelObjectManager(layer, textureManager)
 		// Put all of the labels in their sky regions.
 		// TODO(jpowell): Get this from the label source itself once it supports
 		// this.
-		mSkyRegions = [];//.clear();
+		mSkyRegions.clear();
 		mLabels.forEach( function (l)
 		{
-			/*int region;
+			var region;
 			if (COMPUTE_REGIONS)
 			{
 				region = SkyRegionMap.getObjectRegion(new GeocentricCoordinates(l.x, l.y, l.z));
@@ -149,8 +148,7 @@ function LabelObjectManager(layer, textureManager)
 			{
 				region = SkyRegionMap.CATCHALL_REGION_ID;
 			}
-			mSkyRegions.getRegionData(region).add(l);*/
-			mSkyRegions.push(l);
+			mSkyRegions.getRegionData(region).push(l);
 		});
 	};
 
@@ -159,20 +157,15 @@ function LabelObjectManager(layer, textureManager)
 		this.beginDrawing(gl);
 
 		// Draw the labels for the active sky regions.
-		/*SkyRegionMap.ActiveRegionData activeRegions = getRenderState().getActiveSkyRegions();
-		ArrayList<ArrayList<Label>> allActiveLabels =
-			mSkyRegions.getDataForActiveRegions(activeRegions);
+		var activeRegions = this.getRenderState().getActiveSkyRegions();
+		var allActiveLabels = mSkyRegions.getDataForActiveRegions(activeRegions);
 
-		for (ArrayList<Label> labelsInRegion : allActiveLabels) 
+		allActiveLabels.forEach( function (labelsInRegion)
 		{
-			for (Label l : labelsInRegion) 
+			labelsInRegion.forEach (function (l) 
 			{
-				drawLabel(gl, l);
-			}
-		}*/
-		mSkyRegions.forEach(function (l)
-		{
-			this.drawLabel(gl, l);
+				this.drawLabel(gl, l);
+			}, this);
 		}, this);
 
 		this.endDrawing(gl);
