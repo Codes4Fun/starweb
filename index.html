@@ -827,7 +827,7 @@ function setNorth()
 	northReset = true;
 }
 
-function updateNorth(magneticNorth)
+function getNorth(magneticNorth, view)
 {
 	if (northReset)
 	{
@@ -835,10 +835,15 @@ function updateNorth(magneticNorth)
 		preferences.setString('northAngle', northAngle.toString());
 		northReset = false;
 	}
-	var x = magneticNorth.x * Math.cos(northAngle) + magneticNorth.z * Math.sin(northAngle);
-	var z = -magneticNorth.x * Math.sin(northAngle) + magneticNorth.z * Math.cos(northAngle);
-	magneticNorth.x = x;
-	magneticNorth.z = z;
+
+	var forwardX = Math.sin(northAngle);
+	var forwardZ = Math.cos(northAngle);
+	
+	var northX = view[0] * forwardX + view[8] * forwardZ;
+	var northY = view[1] * forwardX + view[9] * forwardZ;
+	var northZ = view[2] * forwardX + view[10] * forwardZ;
+	
+	magneticNorth.assign(northX, northY, northZ);
 }
 
 var orientationAngle = 0;
@@ -851,8 +856,7 @@ function step(timestamp)
 	{
 		matrixSetQuaternion(view, state.orientation);
 		acceleration.assign(-view[4], -view[5], -view[6]);
-		magneticNorth.assign(view[8], view[9], view[10]);
-		updateNorth(magneticNorth);
+		getNorth(magneticNorth, view);
 		model.setPhoneSensorValues(acceleration, magneticNorth);
 	}
 	else if (gDeviceOrientation)
