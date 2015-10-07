@@ -1,7 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SkyMap</title>
+<title>Sky Map</title>
+<link rel="shortcut icon" href="http://codes4fun.github.io/starweb/drawable/skymap_logo.png" />
+<meta property="og:title" content="Sky Map" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="http://codes4fun.github.io/starweb/" />
+<meta property="og:image" content="http://codes4fun.github.io/starweb/drawable/skymap_logo.png" />
+
 <style>
 html, body {
 	margin:0px;
@@ -831,7 +837,7 @@ function getNorth(magneticNorth, view)
 {
 	if (northReset)
 	{
-		northAngle = -Math.atan2(magneticNorth.x, magneticNorth.z);
+		northAngle = -Math.atan2(view[8], view[10]);
 		preferences.setString('northAngle', northAngle.toString());
 		northReset = false;
 	}
