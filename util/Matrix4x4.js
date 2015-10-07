@@ -93,18 +93,30 @@ Matrix4x4.createPerspectiveProjection = function (width, height, fovyInRadians)
 	var near = 0.01;
 	var far = 10000.0;
 
-	var inverseAspectRatio = height / width;
-
 	var oneOverTanHalfRadiusOfView = 1.0 / Math.tan(fovyInRadians);
+	
+	var x, y;
+	if (height < width)
+	{
+		// height is narrower than width
+		x = height / width * oneOverTanHalfRadiusOfView;
+		y = oneOverTanHalfRadiusOfView;
+	}
+	else
+	{
+		// width is narrower than height
+		x = oneOverTanHalfRadiusOfView;
+		y = width / height * oneOverTanHalfRadiusOfView;
+	}
 
 	return new Matrix4x4([
-		inverseAspectRatio * oneOverTanHalfRadiusOfView,
+		x, 
 		0,
 		0,
 		0,
 
 		0,
-		oneOverTanHalfRadiusOfView,
+		y,
 		0,
 		0,
 
