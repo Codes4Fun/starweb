@@ -894,7 +894,6 @@ function step(timestamp)
 		magneticNorth.y = -magneticNorth.y;
 		magneticNorth.z = -magneticNorth.z;
 
-		updateNorth(magneticNorth);
 		model.setPhoneSensorValues(acceleration, magneticNorth);
 	}
 
