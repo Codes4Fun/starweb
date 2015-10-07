@@ -52,13 +52,11 @@ Buttons on the left hide/show layers:
 
 Buttons on the right:
  - set location manually
- - set current direction as north
+ - set current direction as north (only available for WebVR browsers)
  - enable/disable stereoscopic 3d/vr in fullscreen
  - show full screen.
 
-#### MISC
-
-I originally intended this to be a 1 week project and it is already going past that.
+#### TODO
 
 Things that I may not complete given how much time I have:
  - Layers for Meteor Showers, Messier Objects. Need know what to look for to test them.
@@ -67,9 +65,13 @@ Things that I may not complete given how much time I have:
  - searching
  - night vision mode
 
-Improvements for VR:
+Ideas for improving VR:
  - Small space option (room size distance for example), need head position tracking to be integrated.
- - maybe try to used fixed labels instead of rotating them by head orientation.
+ - maybe try to use fixed labels instead of rotating them by head orientation.
+
+#### MISC
+
+I originally intended this to be a 1 week project and it is already going past that.
 
 I accept bitcoins!
 [17Mqj42oV1xtMWt16MBPyveZZXKUaJFH1H]
